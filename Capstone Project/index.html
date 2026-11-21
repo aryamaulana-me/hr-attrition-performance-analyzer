@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Attrition & Employee Performance Analyzer</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Tailwind custom config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a5f',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans">
+
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
+  <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight leading-tight">
+          📊 HR Attrition & Performance Analyzer
+        </h1>
+        <p class="text-blue-200 text-xs sm:text-sm mt-0.5">IBM HR Analytics · Powered by CSV Data</p>
+      </div>
+      <!-- Loading indicator -->
+      <div id="loading-indicator" class="flex items-center gap-2 text-blue-200 text-sm">
+        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <span>Memuat data…</span>
+      </div>
+      <div id="data-loaded-badge" class="hidden items-center gap-1.5 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+        ✔ Data Siap
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+  ============================================================ -->
+  <main class="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+
+    <!-- FILTER PANEL -->
+    <section aria-label="Panel Filter" class="bg-white rounded-2xl shadow-md p-5 border border-slate-200">
+      <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">🔍 Filter Data</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+        <div class="flex flex-col gap-1">
+          <label for="filter-department" class="text-xs font-medium text-slate-600">Department</label>
+          <select id="filter-department" class="filter-select">
+            <option value="all">Semua</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="filter-jobrole" class="text-xs font-medium text-slate-600">Job Role</label>
+          <select id="filter-jobrole" class="filter-select">
+            <option value="all">Semua</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="filter-overtime" class="text-xs font-medium text-slate-600">OverTime</label>
+          <select id="filter-overtime" class="filter-select">
+            <option value="all">Semua</option>
+            <option value="Yes">Ya</option>
+            <option value="No">Tidak</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="filter-travel" class="text-xs font-medium text-slate-600">Business Travel</label>
+          <select id="filter-travel" class="filter-select">
+            <option value="all">Semua</option>
+          </select>
+        </div>
+
+      </div>
+      <!-- Active filter count badge -->
+      <div class="mt-3 flex items-center justify-between">
+        <span id="filter-count" class="text-xs text-slate-500">Menampilkan <strong id="filtered-count">-</strong> dari <strong id="total-count">-</strong> karyawan</span>
+        <button id="reset-filters" class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors">↺ Reset Filter</button>
+      </div>
+    </section>
+
+    <!-- KPI CARDS -->
+    <section aria-label="KPI Utama">
+      <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">📌 KPI Utama</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <div class="kpi-card bg-white rounded-2xl shadow-md border border-slate-200 p-5 flex flex-col gap-2">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Karyawan</span>
+          <span id="kpi-total" class="text-3xl font-bold text-blue-700">-</span>
+          <span class="text-xs text-slate-400">dalam filter aktif</span>
+        </div>
+
+        <div class="kpi-card bg-white rounded-2xl shadow-md border border-slate-200 p-5 flex flex-col gap-2">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tingkat Attrition</span>
+          <span id="kpi-attrition" class="text-3xl font-bold text-red-500">-</span>
+          <span id="kpi-attrition-sub" class="text-xs text-slate-400">- karyawan keluar</span>
+        </div>
+
+        <div class="kpi-card bg-white rounded-2xl shadow-md border border-slate-200 p-5 flex flex-col gap-2">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Rata-Rata Income</span>
+          <span id="kpi-income" class="text-3xl font-bold text-emerald-600">-</span>
+          <span class="text-xs text-slate-400">MonthlyIncome (USD)</span>
+        </div>
+
+        <div class="kpi-card bg-white rounded-2xl shadow-md border border-slate-200 p-5 flex flex-col gap-2">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Karyawan OverTime</span>
+          <span id="kpi-overtime" class="text-3xl font-bold text-amber-500">-</span>
+          <span id="kpi-overtime-sub" class="text-xs text-slate-400">- bekerja lembur</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CHARTS ROW 1: Attrition per Department + OverTime Attrition Rate -->
+    <section aria-label="Grafik Attrition" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <div class="chart-card bg-white rounded-2xl shadow-md border border-slate-200 p-5">
+        <h3 class="chart-title">Attrition per Department</h3>
+        <p class="chart-subtitle">Jumlah karyawan keluar vs. tetap per departemen</p>
+        <div class="chart-wrapper mt-4">
+          <canvas id="chart-attrition-dept"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card bg-white rounded-2xl shadow-md border border-slate-200 p-5">
+        <h3 class="chart-title">Tingkat Attrition berdasarkan OverTime</h3>
+        <p class="chart-subtitle">Perbandingan attrition rate antara karyawan lembur dan tidak</p>
+        <!-- Wrapper dipakai JS untuk toggle antara canvas chart dan pesan info -->
+        <div id="overtime-chart-container" class="chart-wrapper mt-4">
+          <canvas id="chart-attrition-overtime"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- CHARTS ROW 2: Avg Income per JobRole -->
+    <section aria-label="Grafik Income" class="bg-white rounded-2xl shadow-md border border-slate-200 p-5">
+      <h3 class="chart-title">Rata-Rata MonthlyIncome per Job Role</h3>
+      <p class="chart-subtitle">Distribusi rata-rata pendapatan bulanan berdasarkan peran pekerjaan</p>
+      <div class="chart-wrapper-wide mt-4">
+        <canvas id="chart-income-jobrole"></canvas>
+      </div>
+    </section>
+
+    <!-- CHARTS ROW 3: Income Distribution by Attrition + JobSatisfaction/WorkLifeBalance -->
+    <section aria-label="Grafik Kepuasan dan Distribusi" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <div class="chart-card bg-white rounded-2xl shadow-md border border-slate-200 p-5">
+        <h3 class="chart-title">Sebaran MonthlyIncome berdasarkan Status Attrition</h3>
+        <p class="chart-subtitle">Rata-rata pendapatan bulanan karyawan keluar vs. tetap</p>
+        <div class="chart-wrapper mt-4">
+          <canvas id="chart-income-attrition"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card bg-white rounded-2xl shadow-md border border-slate-200 p-5">
+        <h3 class="chart-title">Rata-Rata JobSatisfaction & WorkLifeBalance per Department</h3>
+        <p class="chart-subtitle">Tingkat kepuasan kerja dan keseimbangan kehidupan kerja</p>
+        <div class="chart-wrapper mt-4">
+          <canvas id="chart-satisfaction-dept"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- FINDINGS & RECOMMENDATIONS PANEL -->
+    <section aria-label="Ringkasan Temuan dan Rekomendasi" class="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+      <h2 class="text-base font-bold text-slate-800 mb-1">💡 Ringkasan Temuan & Rekomendasi Retensi HR</h2>
+      <p class="text-xs text-slate-400 mb-5">Analisis dinamis berdasarkan data yang sedang difilter</p>
+      <div id="findings-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Findings injected by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center text-xs text-slate-400 py-6 border-t border-slate-200 mt-4">
+    <p>HR Attrition & Performance Analyzer · Data sumber: <em>WA_Fn-UseC_-HR-Employee-Attrition.csv</em></p>
+  </footer>
+
+  <!-- Main application script -->
+  <script src="script.js"></script>
+</body>
+</html>

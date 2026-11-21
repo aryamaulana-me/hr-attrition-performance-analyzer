@@ -1,0 +1,177 @@
+/* ============================================================
+   style.css — HR Attrition & Performance Analyzer
+   Hanya berisi styling tambahan yang tidak dapat dicapai
+   sepenuhnya dengan Tailwind utility classes.
+   ============================================================ */
+
+/* ---- Base & Typography ---- */
+body {
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Filter Selects ---- */
+.filter-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 14px;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 1.5px solid #e2e8f0;
+  background-color: #f8fafc;
+  color: #334155;
+  font-size: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  width: 100%;
+}
+
+.filter-select:hover {
+  border-color: #93c5fd;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ---- KPI Cards ---- */
+.kpi-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.09);
+}
+
+/* ---- Chart Cards ---- */
+.chart-card {
+  transition: box-shadow 0.2s ease;
+}
+
+.chart-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+}
+
+.chart-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.chart-subtitle {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0.15rem 0 0;
+}
+
+/* ---- Chart Wrappers ---- */
+.chart-wrapper {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+/* Wider chart for horizontal bar */
+.chart-wrapper-wide {
+  position: relative;
+  height: 380px;
+  width: 100%;
+}
+
+/* ---- Finding Cards ---- */
+.finding-card {
+  border-left: 4px solid;
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: #f8fafc;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.finding-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+}
+
+.finding-card.danger  { border-color: #ef4444; }
+.finding-card.warning { border-color: #f59e0b; }
+.finding-card.success { border-color: #10b981; }
+.finding-card.info    { border-color: #3b82f6; }
+
+.finding-card .fc-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+
+.finding-card.danger  .fc-title { color: #dc2626; }
+.finding-card.warning .fc-title { color: #d97706; }
+.finding-card.success .fc-title { color: #059669; }
+.finding-card.info    .fc-title { color: #2563eb; }
+
+.finding-card .fc-body {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.finding-card .fc-rec {
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: #64748b;
+  font-style: italic;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* ---- Skeleton / Pulse placeholder ---- */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 0.4rem;
+}
+
+/* ---- Scrollbar (Webkit) ---- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ---- Responsive chart canvas ---- */
+canvas {
+  max-width: 100%;
+}
+
+/* ---- Smooth transition for all KPI numbers ---- */
+#kpi-total,
+#kpi-attrition,
+#kpi-income,
+#kpi-overtime {
+  transition: opacity 0.3s ease;
+}
